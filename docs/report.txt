@@ -1,0 +1,204 @@
+======================================================================
+DRY BEAN DATASET - MACHINE LEARNING PROJECT REPORT
+======================================================================
+
+
+--- PART 1: DATA INTRODUCTION ---
+
+The Dry Bean Dataset contains 13,611 samples of 7 different types of dry beans
+(DERMASON, BARBUNYA, HOROZ, SEKER, SIRA, CALI, BOMBAY).
+Each sample has 16 geometric features extracted from bean images:
+- Area, Perimeter, MajorAxisLength, MinorAxisLength
+- AspectRation, Eccentricity, ConvexArea, EquivDiameter
+- Extent, Solidity, roundness, Compactness
+- ShapeFactor1, ShapeFactor2, ShapeFactor3, ShapeFactor4
+
+The dataset has been pre-split into train (9527), validation (1347), and test (2737) sets,
+with artificial contamination (missing values, label errors) for cleaning practice.
+
+============================================================
+EXPLORATORY DATA ANALYSIS REPORT
+============================================================
+
+--- Train Set ---
+  Shape: (9527, 17)
+  Feature statistics:
+                Area    Perimeter  MajorAxisLength  MinorAxisLength  AspectRation  Eccentricity     ConvexArea  EquivDiameter       Extent    roundness  ShapeFactor1  ShapeFactor2  ShapeFactor3  ShapeFactor4
+count    9527.000000  9058.000000      9527.000000      9527.000000   9527.000000   9527.000000    9527.000000    9527.000000  9527.000000  9527.000000   9527.000000   9527.000000   9527.000000   9527.000000
+mean    53040.261048   855.704748       325.879754       202.186193      1.583961      0.751260   53760.587593     253.039286     0.749517     0.872997      0.006566      0.001715      0.643252      0.995060
+std     29316.037320   214.921006       156.669986        44.871319      0.246403      0.091597   29763.896613      59.198356     0.048997     0.059539      0.001128      0.000595      0.098809      0.004396
+min     20420.000000   524.932000       183.601165       129.576207      1.024868      0.218951   20684.000000     161.243764     0.555315     0.489618      0.002778      0.000567      0.416499      0.947687
+25%     36299.500000   703.341250       253.185711       175.548474      1.433645      0.716563   36684.500000     214.983625     0.718343     0.831863      0.005898      0.001152      0.580595      0.993701
+50%     44593.000000   794.336000       296.769143       192.417830      1.551509      0.764576   45131.000000     238.280446     0.759137     0.882757      0.006648      0.001698      0.641794      0.996393
+75%     61332.000000   978.706000       376.915878       217.038627      1.709293      0.811006   62305.000000     279.446467     0.786720     0.916977      0.007279      0.002170      0.695202      0.997875
+max    254616.000000  1985.370000      4951.024098       460.198497      2.388873      0.908167  263261.000000     569.374358     0.866195     0.986812      0.009897      0.003665      0.974767      0.999709
+
+--- Val Set ---
+  Shape: (1347, 17)
+  Feature statistics:
+                Area    Perimeter  MajorAxisLength  MinorAxisLength  AspectRation  Eccentricity     ConvexArea  EquivDiameter       Extent    roundness  ShapeFactor1  ShapeFactor2  ShapeFactor3  ShapeFactor4
+count    1347.000000  1285.000000      1347.000000      1347.000000   1347.000000   1347.000000    1347.000000    1347.000000  1347.000000  1347.000000   1347.000000   1347.000000   1347.000000   1347.000000
+mean    51841.072754   851.130745       317.746004       201.940669      1.574662      0.748398   53196.578322     251.926624     0.750660     0.875862      0.006568      0.001731      0.646625      0.995045
+std     29715.508900   210.772364        83.302248        44.523925      0.241933      0.092013   29014.069939      57.944256     0.048556     0.057777      0.001110      0.000590      0.097955      0.004556
+min    -74783.000000   530.825000       191.648917       136.709958      1.036423      0.262774   21590.000000     164.866970     0.578703     0.652928      0.002942      0.000606      0.418042      0.957233
+25%     36347.000000   703.958000       253.115015       176.110730      1.420917      0.710427   36886.500000     215.774304     0.720375     0.837889      0.005955      0.001180      0.584865      0.993721
+50%     44258.000000   791.941000       295.771333       191.947417      1.547182      0.763053   44899.000000     237.493660     0.761276     0.885312      0.006661      0.001698      0.643131      0.996460
+75%     59671.000000   970.091000       373.118242       214.655724      1.698453      0.808300   60959.000000     275.747334     0.786106     0.917569      0.007264      0.002190      0.700008      0.997957
+max    226687.000000  1839.808000       720.695521       435.837857      2.387395      0.908048  231500.000000     537.240033     0.836043     0.990685      0.009362      0.003350      0.963560      0.999625
+
+--- Test Set ---
+  Shape: (2737, 17)
+  Feature statistics:
+                Area    Perimeter  MajorAxisLength  MinorAxisLength  AspectRation  Eccentricity     ConvexArea  EquivDiameter       Extent    roundness  ShapeFactor1  ShapeFactor2  ShapeFactor3  ShapeFactor4
+count    2737.000000  2591.000000      2737.000000      2737.000000   2737.000000   2737.000000    2737.000000    2737.000000  2737.000000  2737.000000   2737.000000   2737.000000   2737.000000   2737.000000
+mean    52344.416880   858.421673       326.904008       202.727348      1.584962      0.750852   54076.018999     253.710872     0.750026     0.873004      0.006553      0.001712      0.643273      0.995086
+std     31469.371718   216.195585       154.610403        45.541630      0.249936      0.093406   30186.538130      59.713630     0.049665     0.060284      0.001136      0.000600      0.100161      0.004167
+min   -203536.000000   524.736000       183.965251       122.512653      1.047160      0.296721   20825.000000     161.748342     0.566669     0.571801      0.002856      0.000564      0.410339      0.960702
+25%     36156.000000   703.783000       254.245642       176.276767      1.431502      0.715545   36736.000000     215.165664     0.718711     0.830549      0.005854      0.001146      0.582608      0.993703
+50%     44911.000000   802.028000       298.821226       192.785476      1.551796      0.764676   45624.000000     239.700246     0.760919     0.882703      0.006632      0.001681      0.641494      0.996354
+75%     61669.000000   977.922000       377.810438       218.141599      1.703704      0.809619   62953.000000     280.905229     0.787795     0.916506      0.007253      0.002162      0.696235      0.997866
+max    224267.000000  1845.855000      4201.419992       449.339678      2.430306      0.911423  226132.000000     534.364682     0.850744     0.987089      0.010451      0.003573      0.954019      0.999733
+
+Class distribution after cleaning:
+  DERMASON: 2365
+  SIRA: 1781
+  SEKER: 1343
+  HOROZ: 1270
+  CALI: 1120
+  BARBUNYA: 898
+  BOMBAY: 344
+  dermason: 61
+  D3RMAS0N: 56
+  sira: 37
+  horoz: 32
+  seker: 28
+  S3K3R: 24
+  H0R0Z: 24
+  DERMASON : 21
+  SIRA : 19
+  barbunya: 18
+  cali: 16
+  CALI : 15
+  HOROZ : 14
+  SEKER : 13
+  B0MBAY: 12
+  BARBUNYA : 11
+  bombay: 4
+  BOMBAY : 1
+============================================================
+DATA CLEANING REPORT
+============================================================
+
+Original training samples: 9527
+Cleaned training samples: 9527
+
+Missing values before cleaning (train):
+  Perimeter: 469
+  Solidity: 272
+  Compactness: 0
+
+Unique classes before: ['B0MBAY', 'BARBUNYA', 'BARBUNYA ', 'BOMBAY', 'BOMBAY ', 'CALI', 'CALI ', 'D3RMAS0N', 'DERMASON', 'DERMASON ', 'H0R0Z', 'HOROZ', 'HOROZ ', 'S3K3R', 'SEKER', 'SEKER ', 'SIRA', 'SIRA ', 'barbunya', 'bombay', 'cali', 'dermason', 'horoz', 'seker', 'sira']
+Unique classes after: ['BARBUNYA', 'BOMBAY', 'CALI', 'DERMASON', 'HOROZ', 'SEKER', 'SIRA']
+
+Class distribution before (top 10):
+  'DERMASON': 2365
+  'SIRA': 1781
+  'SEKER': 1343
+  'HOROZ': 1270
+  'CALI': 1120
+  'BARBUNYA': 898
+  'BOMBAY': 344
+  'dermason': 61
+  'D3RMAS0N': 56
+  'sira': 37
+
+Class distribution after:
+  DERMASON: 2503
+  SIRA: 1837
+  SEKER: 1408
+  HOROZ: 1340
+  CALI: 1151
+  BARBUNYA: 927
+  BOMBAY: 361
+
+
+--- PART 4: ALGORITHM COMPARISON ---
+Algorithm                      Val Acc      Test Acc     Train Time  
+------------------------------------------------------------------
+Custom KNN (k=7)               0.9183       0.9214       0.000       s
+Custom Logistic Regression     0.9220       0.9167       0.667       s
+Custom Decision Tree           0.9072       0.9024       1.129       s
+SVM (sklearn, RBF kernel)      0.9295       0.9288       0.209       s
+
+
+--- PART 5: OVERFITTING ANALYSIS ---
+
+============================================================
+OVERFITTING ANALYSIS
+============================================================
+
+Custom KNN (k=7):
+  Validation Accuracy: 0.9183
+  Test Accuracy:       0.9214
+  Gap:                 0.0031
+  Verdict: No significant overfitting
+
+Custom Logistic Regression:
+  Validation Accuracy: 0.9220
+  Test Accuracy:       0.9167
+  Gap:                 0.0054
+  Verdict: No significant overfitting
+
+Custom Decision Tree:
+  Validation Accuracy: 0.9072
+  Test Accuracy:       0.9024
+  Gap:                 0.0048
+  Verdict: No significant overfitting
+
+SVM (sklearn, RBF kernel):
+  Validation Accuracy: 0.9295
+  Test Accuracy:       0.9288
+  Gap:                 0.0007
+  Verdict: No significant overfitting
+
+
+--- PART 6: ROBUSTNESS ANALYSIS ---
+
+============================================================
+ROBUSTNESS ANALYSIS - Noise Injection
+============================================================
+
+--- Noise Level: 5% features with std*0.05 noise ---
+  KNN (k=7)                : Test Acc = 0.9214
+  Logistic Regression      : Test Acc = 0.9167
+  Decision Tree            : Test Acc = 0.9024
+  SVM (RBF)                : Test Acc = 0.9288
+
+--- Noise Level: 10% features with std*0.1 noise ---
+  KNN (k=7)                : Test Acc = 0.9200
+  Logistic Regression      : Test Acc = 0.9178
+  Decision Tree            : Test Acc = 0.8948
+  SVM (RBF)                : Test Acc = 0.9280
+
+--- Noise Level: 20% features with std*0.2 noise ---
+  KNN (k=7)                : Test Acc = 0.9214
+  Logistic Regression      : Test Acc = 0.9149
+  Decision Tree            : Test Acc = 0.8988
+  SVM (RBF)                : Test Acc = 0.9258
+
+
+--- PART 7: COURSE SUMMARY ---
+
+Through this machine learning course and project, I have learned:
+1. The complete ML pipeline: data collection, preprocessing, feature engineering, model training, evaluation
+2. How to handle real-world data issues: missing values, label noise, outliers
+3. Implementation of classic algorithms from scratch: KNN, Logistic Regression, Decision Tree
+4. Using open-source libraries (scikit-learn) for efficient model development (SVM)
+5. Model evaluation techniques: accuracy, confusion matrix, overfitting analysis, robustness testing
+6. Project structuring and version control with Git/GitHub
+7. The importance of data quality and proper preprocessing for model performance
+
+Course suggestions:
+- More hands-on projects with real-world datasets
+- More time for advanced topics like ensemble methods and neural networks
+- Include a session on ML system design and deployment

@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dry Bean Classifier · ML Project</title>
+  <meta name="description" content="A complete machine learning classification project on the UCI Dry Bean Dataset — data cleaning, custom algorithms, evaluation.">
+  <meta property="og:title" content="Dry Bean Classifier · ML Project">
+  <meta property="og:description" content="7 bean types, 16 features, 4 algorithms. SVM achieves 92.88% accuracy.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://zhangdsg.github.io/machine/">
+  <meta property="og:image" content="https://zhangdsg.github.io/machine/figures/comparison.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#7c6dff">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="loading-bar" id="loadingBar"></div>
+
+<!-- ═══ Navigation ═══ -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-brand">
+      <span class="nav-brand-icon">◆</span>
+      BeanClassifier
+    </a>
+    <button class="mobile-btn" id="mobileBtn" aria-label="Menu">☰</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#data-description">Data</a></li>
+      <li><a href="#processing">Processing</a></li>
+      <li><a href="#algorithms">Algorithms</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li>
+        <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">🌙</button>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ═══ Hero ═══ -->
+<section class="hero">
+  <div class="hero-glow-1"></div>
+  <div class="hero-glow-2"></div>
+  <div class="hero-content">
+    <div class="hero-badge">🎓 机器学习与项目实践 · 2026</div>
+    <h1>Dry Bean <span class="gradient">Classification</span></h1>
+    <p>An end-to-end machine learning pipeline — from raw data to model evaluation.<br>Custom KNN, Logistic Regression &amp; Decision Tree, benchmarked against scikit-learn SVM.</p>
+    <div class="hero-buttons">
+      <a href="https://github.com/zhangdsg/machine" target="_blank" class="btn btn-primary">
+        <span>⌨</span> Source Code
+      </a>
+      <a href="#results" class="btn btn-secondary">
+        <span>📊</span> View Results
+      </a>
+      <a href="paper.md" target="_blank" class="btn btn-outline">
+        <span>📄</span> Paper
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">13,611</div>
+        <div class="hero-stat-lbl">Total Samples</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">16</div>
+        <div class="hero-stat-lbl">Geometric Features</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">7</div>
+        <div class="hero-stat-lbl">Bean Classes</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">92.88%</div>
+        <div class="hero-stat-lbl">SVM Test Accuracy</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 1. Data Description ═══ -->
+<section class="section" id="data-description">
+  <div class="section-inner">
+    <div class="section-tag reveal">📦 1. Data Description</div>
+    <h2 class="section-title reveal reveal-delay-1">Dataset Overview</h2>
+    <p class="section-desc reveal reveal-delay-2">
+      The <a href="https://archive.ics.uci.edu/dataset/602/dry+bean+dataset" target="_blank" style="color:var(--accent);">UCI Dry Bean Dataset</a> is a widely used multi-class classification dataset collected by Koklu &amp; Ozkan (2020) from Selcuk University, Turkey. It contains 13,611 samples of seven Turkish dry bean varieties, with 16 geometric shape features extracted from high-resolution images.
+    </p>
+
+    <!-- Dataset splits -->
+    <div class="grid-3 reveal reveal-delay-3" style="margin-bottom:32px;">
+      <div class="card" style="text-align:center;padding:24px;">
+        <div style="font-size:2rem;font-weight:800;color:var(--accent);">9,527</div>
+        <div style="font-size:0.85rem;color:var(--text-secondary);margin-top:4px;">Training Set <span style="color:var(--text-tertiary);">(70%)</span></div>
+      </div>
+      <div class="card" style="text-align:center;padding:24px;">
+        <div style="font-size:2rem;font-weight:800;color:var(--pink);">1,347</div>
+        <div style="font-size:0.85rem;color:var(--text-secondary);margin-top:4px;">Validation Set <span style="color:var(--text-tertiary);">(10%)</span></div>
+      </div>
+      <div class="card" style="text-align:center;padding:24px;">
+        <div style="font-size:2rem;font-weight:800;color:var(--gold);">2,737</div>
+        <div style="font-size:0.85rem;color:var(--text-secondary);margin-top:4px;">Test Set <span style="color:var(--text-tertiary);">(20%)</span></div>
+      </div>
+    </div>
+
+    <!-- Feature table -->
+    <div class="reveal reveal-delay-4">
+      <h3 style="font-size:1.1rem;margin-bottom:16px;">16 Geometric Features</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th style="width:40px;">#</th><th>Feature</th><th>Meaning</th><th>Unit</th><th>Range (Train)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td><code>Area</code></td><td>Bean area (pixel count)</td><td>px²</td><td>20,420 – 254,616</td></tr>
+            <tr><td>2</td><td><code>Perimeter</code></td><td>Bean perimeter length</td><td>px</td><td>524.93 – 1,985.37</td></tr>
+            <tr><td>3</td><td><code>MajorAxisLength</code></td><td>Length of the major ellipse axis</td><td>px</td><td>183.60 – 4,951.02</td></tr>
+            <tr><td>4</td><td><code>MinorAxisLength</code></td><td>Length of the minor ellipse axis</td><td>px</td><td>129.58 – 460.20</td></tr>
+            <tr><td>5</td><td><code>AspectRation</code></td><td>Major / Minor axis ratio</td><td>—</td><td>1.02 – 2.39</td></tr>
+            <tr><td>6</td><td><code>Eccentricity</code></td><td>Eccentricity of the fitted ellipse</td><td>—</td><td>0.22 – 0.91</td></tr>
+            <tr><td>7</td><td><code>ConvexArea</code></td><td>Convex hull area</td><td>px²</td><td>20,684 – 263,261</td></tr>
+            <tr><td>8</td><td><code>EquivDiameter</code></td><td>Diameter of circle with same area</td><td>px</td><td>161.24 – 569.37</td></tr>
+            <tr><td>9</td><td><code>Extent</code></td><td>Area / bounding box area ratio</td><td>—</td><td>0.56 – 0.87</td></tr>
+            <tr><td>10</td><td><code>Solidity</code></td><td>Area / convex hull area ratio</td><td>—</td><td>0.49 – 0.99</td></tr>
+            <tr><td>11</td><td><code>roundness</code></td><td>Roundness (4×Area / π×MajorAxis²)</td><td>—</td><td>0.49 – 0.99</td></tr>
+            <tr><td>12</td><td><code>Compactness</code></td><td>Compactness (√(4×Area/π) / MajorAxis)</td><td>—</td><td>0.42 – 0.97</td></tr>
+            <tr><td>13</td><td><code>ShapeFactor1</code></td><td>Shape factor 1</td><td>—</td><td>0.003 – 0.010</td></tr>
+            <tr><td>14</td><td><code>ShapeFactor2</code></td><td>Shape factor 2</td><td>—</td><td>0.001 – 0.004</td></tr>
+            <tr><td>15</td><td><code>ShapeFactor3</code></td><td>Shape factor 3</td><td>—</td><td>0.42 – 0.97</td></tr>
+            <tr><td>16</td><td><code>ShapeFactor4</code></td><td>Shape factor 4</td><td>—</td><td>0.95 – 1.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Class table -->
+    <div class="reveal mt-40">
+      <h3 style="font-size:1.1rem;margin-bottom:16px;">7 Bean Classes &amp; Distribution</h3>
+      <div class="grid-2">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Class</th><th>中文</th><th>Train</th><th>Ratio</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>DERMASON</strong></td><td>德马森豆</td><td>2,503</td><td>26.27%</td></tr>
+              <tr><td><strong>SIRA</strong></td><td>西拉豆</td><td>1,837</td><td>19.28%</td></tr>
+              <tr><td><strong>SEKER</strong></td><td>塞克尔豆</td><td>1,408</td><td>14.78%</td></tr>
+              <tr><td><strong>HOROZ</strong></td><td>霍罗兹豆</td><td>1,340</td><td>14.07%</td></tr>
+              <tr><td><strong>CALI</strong></td><td>卡利豆</td><td>1,151</td><td>12.08%</td></tr>
+              <tr><td><strong>BARBUNYA</strong></td><td>巴布尼亚豆</td><td>927</td><td>9.73%</td></tr>
+              <tr><td><strong>BOMBAY</strong></td><td>孟买豆</td><td>361</td><td>3.79%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <img src="figures/class_distribution.png" alt="Class Distribution" style="width:100%;display:block;cursor:pointer;" onclick="openLightbox(this.src)">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 2. Data Processing ═══ -->
+<section class="section" id="processing">
+  <div class="section-inner">
+    <div class="section-tag reveal">🧹 2. Data Processing</div>
+    <h2 class="section-title reveal reveal-delay-1">Data Cleaning &amp; Preprocessing</h2>
+    <p class="section-desc reveal reveal-delay-2">
+      The dataset was artificially contaminated to simulate real-world data quality issues, including missing values and label noise. Proper handling of these issues was critical for model performance.
+    </p>
+
+    <!-- Step 1: Missing Values -->
+    <div class="card reveal mb-24">
+      <div class="flex items-center gap-8 mb-16">
+        <span style="font-size:1.5rem;">📉</span>
+        <h3 style="font-size:1.1rem;">Step 1: Missing Value Imputation</h3>
+      </div>
+      <p class="text-secondary text-sm mb-16">
+        Two features — <strong>Perimeter</strong> and <strong>Solidity</strong> — had empty-string cells stored as <code>object</code> dtype. After converting to numeric, missing values were filled with the <strong>median</strong> of each feature. Median was chosen over mean because it is robust to outliers (the test set contains extreme negative Area values).
+      </p>
+      <div class="table-wrap" style="border-radius:var(--radius-sm);max-width:500px;">
+        <table>
+          <thead><tr><th>Feature</th><th>Missing</th><th>%</th><th>Strategy</th></tr></thead>
+          <tbody>
+            <tr><td>Perimeter</td><td>469</td><td>4.92%</td><td><span class="tag tag-cyan">Median fill</span></td></tr>
+            <tr><td>Solidity</td><td>272</td><td>2.86%</td><td><span class="tag tag-cyan">Median fill</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="code-block mt-16">
+        <span class="cm"># Convert string columns to numeric (coerce errors → NaN)</span><br>
+        df[col] = pd.<span class="fn">to_numeric</span>(df[col], errors=<span class="str">'coerce'</span>)<br><br>
+        <span class="cm"># Fill with median (robust to outliers)</span><br>
+        median_val = df[col].<span class="fn">median</span>()<br>
+        df[col] = df[col].<span class="fn">fillna</span>(median_val)
+      </div>
+    </div>
+
+    <!-- Step 2: Label Noise -->
+    <div class="card reveal mb-24">
+      <div class="flex items-center gap-8 mb-16">
+        <span style="font-size:1.5rem;">🏷️</span>
+        <h3 style="font-size:1.1rem;">Step 2: Label Standardization</h3>
+      </div>
+      <p class="text-secondary text-sm mb-16">
+        The original label column contained <strong>25 different variants</strong> of the 7 true class names. The noise included:
+      </p>
+      <div class="grid-3 mb-16" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+        <div class="card-sm" style="background:var(--bg-elevated);border-radius:var(--radius-sm);">
+          <span class="tag tag-pink mb-8" style="display:inline-block;">Case</span>
+          <div style="font-size:0.85rem;color:var(--text-secondary);"><code>DERMASON</code> vs <code>dermason</code></div>
+        </div>
+        <div class="card-sm" style="background:var(--bg-elevated);border-radius:var(--radius-sm);">
+          <span class="tag tag-pink mb-8" style="display:inline-block;">Trailing Spaces</span>
+          <div style="font-size:0.85rem;color:var(--text-secondary);"><code>DERMASON&nbsp;</code>, <code>CALI&nbsp;</code></div>
+        </div>
+        <div class="card-sm" style="background:var(--bg-elevated);border-radius:var(--radius-sm);">
+          <span class="tag tag-pink mb-8" style="display:inline-block;">OCR Substitutions</span>
+          <div style="font-size:0.85rem;color:var(--text-secondary);"><code>D3RMAS0N</code>, <code>S3K3R</code>, <code>H0R0Z</code></div>
+        </div>
+      </div>
+      <p class="text-secondary text-sm mb-16">
+        A mapping dictionary was built to normalize all 25 variants into the 7 standard classes. This preserved <strong>100% of samples</strong> — no data was discarded.
+      </p>
+      <div class="code-block">
+        <span class="cm"># Mapping 25 dirty labels → 7 clean classes</span><br>
+        CLASS_MAPPING = {<br>
+        &nbsp;&nbsp;<span class="str">'DERMASON'</span>: <span class="str">'DERMASON'</span>, <span class="str">'dermason'</span>: <span class="str">'DERMASON'</span>,<br>
+        &nbsp;&nbsp;<span class="str">'D3RMAS0N'</span>: <span class="str">'DERMASON'</span>, <span class="str">'DERMASON '</span>: <span class="str">'DERMASON'</span>,<br>
+        &nbsp;&nbsp;<span class="str">'H0R0Z'</span>: <span class="str">'HOROZ'</span>, <span class="str">'S3K3R'</span>: <span class="str">'SEKER'</span>, <span class="str">'B0MBAY'</span>: <span class="str">'BOMBAY'</span>,<br>
+        &nbsp;&nbsp;<span class="cm"># ... 18 more mappings</span><br>
+        }<br><br>
+        df[<span class="str">'Class'</span>] = df[<span class="str">'Class'</span>].<span class="fn">str.strip()</span>.<span class="fn">map</span>(CLASS_MAPPING)<br>
+        df = df.<span class="fn">dropna</span>(subset=[<span class="str">'Class'</span>])  <span class="cm"># drops 0 rows</span>
+      </div>
+    </div>
+
+    <!-- Step 3: Feature Scaling -->
+    <div class="card reveal mb-24">
+      <div class="flex items-center gap-8 mb-16">
+        <span style="font-size:1.5rem;">📏</span>
+        <h3 style="font-size:1.1rem;">Step 3: Feature Standardization (Z-Score)</h3>
+      </div>
+      <p class="text-secondary text-sm mb-16">
+        Features have vastly different scales — <code>Area</code> ranges from ~20,000 to ~255,000 while <code>ShapeFactor1</code> is ~0.003 to ~0.010. <strong>Z-score standardization</strong> was applied so that all features have mean=0 and variance=1, which is essential for distance-based algorithms like KNN and SVM.
+      </p>
+      <p class="text-secondary text-sm mb-16">
+        <strong>Critical detail:</strong> The mean and standard deviation are computed <em>only on the training set</em>. The validation and test sets use the <em>same</em> parameters to prevent data leakage.
+      </p>
+      <div class="code-block">
+        <span class="cm"># Standardization formula</span><br>
+        X_std = (X - μ) / σ<br><br>
+        <span class="cm"># Fit on training set only!</span><br>
+        μ = X_train.<span class="fn">mean</span>(axis=<span class="num">0</span>)<br>
+        σ = X_train.<span class="fn">std</span>(axis=<span class="num">0</span>)<br>
+        σ[σ == <span class="num">0</span>] = <span class="num">1</span>  <span class="cm"># avoid division by zero</span><br><br>
+        X_train_std = (X_train - μ) / σ<br>
+        X_val_std   = (X_val   - μ) / σ  <span class="cm"># same μ, σ</span><br>
+        X_test_std  = (X_test  - μ) / σ  <span class="cm"># same μ, σ</span>
+      </div>
+    </div>
+
+    <!-- EDA Gallery -->
+    <div class="reveal">
+      <div class="section-tag">📈 Exploratory Data Analysis</div>
+      <h2 class="section-title">Visual Exploration</h2>
+      <p class="section-desc">16 geometric features analyzed across train/val/test splits, per-class distributions, and pairwise correlations.</p>
+      <div class="gallery">
+        <div class="gallery-item" onclick="openLightbox('figures/feature_distributions.png')">
+          <img src="figures/feature_distributions.png" alt="Feature Distributions" loading="lazy">
+          <div class="gallery-caption">Feature Distributions <small>— Train / Val / Test overlay</small></div>
+        </div>
+        <div class="gallery-item" onclick="openLightbox('figures/feature_by_class.png')">
+          <img src="figures/feature_by_class.png" alt="Feature by Class" loading="lazy">
+          <div class="gallery-caption">Features by Class <small>— Box plots per feature per class</small></div>
+        </div>
+        <div class="gallery-item" onclick="openLightbox('figures/correlation_matrix.png')">
+          <img src="figures/correlation_matrix.png" alt="Correlation Matrix" loading="lazy">
+          <div class="gallery-caption">Correlation Matrix <small>— Area vs ConvexArea: r ≈ 0.99</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 3. Algorithms ═══ -->
+<section class="section" id="algorithms">
+  <div class="section-inner">
+    <div class="section-tag reveal">🧠 3. Algorithms &amp; Implementation</div>
+    <h2 class="section-title reveal reveal-delay-1">Four Classification Algorithms</h2>
+    <p class="section-desc reveal reveal-delay-2">
+      Three algorithms implemented <strong>from scratch in pure NumPy</strong> (KNN, Softmax Logistic Regression, CART Decision Tree), benchmarked against scikit-learn's optimized SVM.
+    </p>
+
+    <!-- KNN -->
+    <div class="card reveal mb-24">
+      <div class="grid-2" style="align-items:start;">
+        <div>
+          <div class="flex items-center gap-8 mb-12">
+            <span style="font-size:1.8rem;">📍</span>
+            <h3 style="font-size:1.15rem;">K-Nearest Neighbors (KNN)</h3>
+          </div>
+          <div class="flex flex-wrap gap-8 mb-12">
+            <span class="tag tag-accent">Custom Implementation</span>
+            <span class="tag tag-gold">Test: 92.14%</span>
+          </div>
+          <p class="text-secondary text-sm mb-12">
+            A non-parametric, instance-based (lazy) learning algorithm. It stores all training samples and classifies new samples by majority vote among the K closest training points in feature space.
+          </p>
+          <div class="text-sm mb-8">
+            <strong>Key Parameters:</strong>
+          </div>
+          <div class="table-wrap" style="border-radius:var(--radius-sm);max-width:350px;">
+            <table>
+              <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+              <tbody>
+                <tr><td>K</td><td>7 (tuned via validation)</td></tr>
+                <tr><td>Distance</td><td>Euclidean (L2)</td></tr>
+                <tr><td>Voting</td><td>Majority</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-secondary text-sm mt-12">
+            <strong>Complexity:</strong> Train O(1), Predict O(n×d). Fastest training (0.000s) but slowest prediction.
+          </p>
+        </div>
+        <div>
+          <div class="code-block">
+            <span class="kw">class</span> <span class="fn">KNN</span>:<br>
+            &nbsp;&nbsp;<span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, k=<span class="num">5</span>, metric=<span class="str">'euclidean'</span>):<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">self</span>.k = k<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">self</span>.metric = metric<br><br>
+            &nbsp;&nbsp;<span class="kw">def</span> <span class="fn">fit</span>(<span class="kw">self</span>, X, y):<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">self</span>.X_train = np.<span class="fn">array</span>(X)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">self</span>.y_train = np.<span class="fn">array</span>(y)<br><br>
+            &nbsp;&nbsp;<span class="kw">def</span> <span class="fn">predict</span>(<span class="kw">self</span>, X):<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;predictions = []<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">for</span> x <span class="kw">in</span> X:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dists = [<span class="fn">sqrt</span>(<span class="fn">sum</span>((x - x_train)**<span class="num">2</span>))<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">for</span> x_train <span class="kw">in</span> <span class="kw">self</span>.X_train]<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;k_idx = np.<span class="fn">argsort</span>(dists)[:<span class="kw">self</span>.k]<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;k_labels = [<span class="kw">self</span>.y_train[i] <span class="kw">for</span> i <span class="kw">in</span> k_idx]<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pred = <span class="fn">Counter</span>(k_labels).<span class="fn">most_common</span>(<span class="num">1</span>)[<span class="num">0</span>][<span class="num">0</span>]<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;predictions.<span class="fn">append</span>(pred)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> np.<span class="fn">array</span>(predictions)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logistic Regression -->
+    <div class="card reveal mb-24">
+      <div class="grid-2" style="align-items:start;">
+        <div>
+          <div class="flex items-center gap-8 mb-12">
+            <span style="font-size:1.8rem;">📈</span>
+            <h3 style="font-size:1.15rem;">Softmax Logistic Regression</h3>
+          </div>
+          <div class="flex flex-wrap gap-8 mb-12">
+            <span class="tag tag-accent">Custom Implementation</span>
+            <span class="tag tag-gold">Test: 91.67%</span>
+          </div>
+          <p class="text-secondary text-sm mb-12">
+            A multi-class generalization of binary logistic regression. Instead of sigmoid, it uses the <strong>Softmax</strong> function to convert linear outputs into a probability distribution over all 7 classes.
+          </p>
+          <div class="text-sm mb-8">
+            <strong>Mathematical Formulation:</strong>
+          </div>
+          <div class="code-block mb-12" style="font-family:'Inter',sans-serif;font-size:0.85rem;">
+            P(y=c|x) = exp(w<sub>c</sub>·x + b<sub>c</sub>) / Σ<sub>j</sub> exp(w<sub>j</sub>·x + b<sub>j</sub>)
+          </div>
+          <div class="text-sm mb-8">
+            <strong>Loss:</strong> Categorical Cross-Entropy
+          </div>
+          <div class="code-block mb-12" style="font-family:'Inter',sans-serif;font-size:0.85rem;">
+            L = -(1/N) Σ<sub>i</sub> Σ<sub>c</sub> y<sub>ic</sub> log(ŷ<sub>ic</sub>)
+          </div>
+          <div class="text-sm mb-8">
+            <strong>Hyperparameters:</strong>
+          </div>
+          <div class="table-wrap" style="border-radius:var(--radius-sm);max-width:350px;">
+            <table>
+              <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+              <tbody>
+                <tr><td>Learning rate</td><td>0.05</td></tr>
+                <tr><td>Epochs</td><td>200</td></tr>
+                <tr><td>Batch size</td><td>512</td></tr>
+                <tr><td>Optimizer</td><td>Mini-batch SGD</td></tr>
+                <tr><td>Weight init</td><td>N(0, 0.01)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="code-block">
+            <span class="kw">def</span> <span class="fn">fit</span>(<span class="kw">self</span>, X, y_onehot):<br>
+            &nbsp;&nbsp;n, d = X.shape<br>
+            &nbsp;&nbsp;c = y_onehot.shape[<span class="num">1</span>]<br>
+            &nbsp;&nbsp;W = np.<span class="fn">random.randn</span>(d, c) * <span class="num">0.01</span><br>
+            &nbsp;&nbsp;b = np.<span class="fn">zeros</span>((<span class="num">1</span>, c))<br><br>
+            &nbsp;&nbsp;<span class="kw">for</span> epoch <span class="kw">in</span> <span class="fn">range</span>(epochs):<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;perm = np.<span class="fn">random.permutation</span>(n)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;X, y = X[perm], y_onehot[perm]<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">0</span>, n, batch_size):<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Xb, yb = X[i:i+b], y[i:i+b]<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;logits = Xb @ W + b<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;probs = <span class="fn">softmax</span>(logits)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dW = Xb.T @ (probs - yb) / len(Xb)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db = <span class="fn">sum</span>(probs - yb, axis=<span class="num">0</span>) / len(Xb)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;W -= lr * dW<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b -= lr * db<br><br>
+            &nbsp;&nbsp;<span class="kw">self</span>.W, <span class="kw">self</span>.b = W, b
+          </div>
+          <p class="text-xs text-tertiary mt-8">Full implementation: <code>algorithms/logistic_regression.py</code></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decision Tree -->
+    <div class="card reveal mb-24">
+      <div class="grid-2" style="align-items:start;">
+        <div>
+          <div class="flex items-center gap-8 mb-12">
+            <span style="font-size:1.8rem;">🌳</span>
+            <h3 style="font-size:1.15rem;">CART Decision Tree</h3>
+          </div>
+          <div class="flex flex-wrap gap-8 mb-12">
+            <span class="tag tag-accent">Custom Implementation</span>
+            <span class="tag tag-gold">Test: 90.24%</span>
+          </div>
+          <p class="text-secondary text-sm mb-12">
+            Implements a Classification and Regression Tree using <strong>Gini impurity</strong> as the splitting criterion. The tree is built recursively — at each node it searches over all features and 9 percentile thresholds to find the split that maximizes Gini gain.
+          </p>
+          <div class="text-sm mb-8">
+            <strong>Gini Impurity:</strong>
+          </div>
+          <div class="code-block mb-12" style="font-family:'Inter',sans-serif;font-size:0.85rem;">
+            Gini = 1 - Σ<sub>i</sub> p<sub>i</sub>²
+          </div>
+          <div class="text-sm mb-8">
+            <strong>Pre-pruning Hyperparameters:</strong>
+          </div>
+          <div class="table-wrap" style="border-radius:var(--radius-sm);max-width:350px;">
+            <table>
+              <thead><tr><th>Parameter</th><th>Value</th><th>Purpose</th></tr></thead>
+              <tbody>
+                <tr><td>max_depth</td><td>15</td><td>Limit tree depth</td></tr>
+                <tr><td>min_samples_split</td><td>20</td><td>Minimum samples to split</td></tr>
+                <tr><td>min_samples_leaf</td><td>5</td><td>Minimum leaf size</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-secondary text-sm mt-12">
+            <strong>Splitting strategy:</strong> For each feature, evaluate 9 percentile thresholds (10%–90%). This is more efficient than checking every unique value.
+          </p>
+        </div>
+        <div>
+          <div class="code-block">
+            <span class="kw">def</span> <span class="fn">_build_tree</span>(<span class="kw">self</span>, X, y, depth):<br>
+            &nbsp;&nbsp;<span class="kw">if</span> depth &gt;= max_depth <span class="kw">or</span> <span class="fn">len</span>(y) &lt; min_split:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="fn">Node</span>(value=<span class="fn">most_common</span>(y))<br><br>
+            &nbsp;&nbsp;best_gain = -<span class="num">1</span><br>
+            &nbsp;&nbsp;<span class="kw">for</span> f <span class="kw">in</span> <span class="fn">range</span>(X.shape[<span class="num">1</span>]):<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;thresholds = np.<span class="fn">percentile</span>(X[:, f],<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">linspace</span>(<span class="num">10</span>, <span class="num">90</span>, <span class="num">9</span>))<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">for</span> t <span class="kw">in</span> thresholds:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;left, right = X[:, f] &lt;= t, X[:, f] &gt; t<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gain = gini(y) - weighted_gini(y[left], y[right])<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> gain &gt; best_gain:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;best_gain, best_f, best_t = gain, f, t<br><br>
+            &nbsp;&nbsp;left_node  = <span class="kw">self</span>.<span class="fn">_build_tree</span>(X[left], y[left], depth+<span class="num">1</span>)<br>
+            &nbsp;&nbsp;right_node = <span class="kw">self</span>.<span class="fn">_build_tree</span>(X[right], y[right], depth+<span class="num">1</span>)<br>
+            &nbsp;&nbsp;<span class="kw">return</span> <span class="fn">Node</span>(best_f, best_t, left_node, right_node)
+          </div>
+          <p class="text-xs text-tertiary mt-8">Full implementation: <code>algorithms/decision_tree.py</code></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SVM -->
+    <div class="card reveal mb-24">
+      <div class="grid-2" style="align-items:start;">
+        <div>
+          <div class="flex items-center gap-8 mb-12">
+            <span style="font-size:1.8rem;">⚡</span>
+            <h3 style="font-size:1.15rem;">Support Vector Machine (SVM)</h3>
+          </div>
+          <div class="flex flex-wrap gap-8 mb-12">
+            <span class="tag tag-cyan">scikit-learn</span>
+            <span class="tag tag-gold">Test: 92.88%</span>
+          </div>
+          <p class="text-secondary text-sm mb-12">
+            Used as the <strong>open-source benchmark</strong>. SVM finds the optimal hyperplane that maximizes the margin between classes. For non-linear data, the <strong>RBF (Radial Basis Function) kernel</strong> projects samples into a higher-dimensional space where they become linearly separable.
+          </p>
+          <div class="text-sm mb-8">
+            <strong>RBF Kernel:</strong>
+          </div>
+          <div class="code-block mb-12" style="font-family:'Inter',sans-serif;font-size:0.85rem;">
+            K(x<sub>i</sub>, x<sub>j</sub>) = exp(-γ ||x<sub>i</sub> - x<sub>j</sub>||²)
+          </div>
+          <div class="text-sm mb-8">
+            <strong>Configuration:</strong>
+          </div>
+          <div class="table-wrap" style="border-radius:var(--radius-sm);max-width:350px;">
+            <table>
+              <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+              <tbody>
+                <tr><td>Kernel</td><td>RBF</td></tr>
+                <tr><td>C (regularization)</td><td>1.0</td></tr>
+                <tr><td>gamma</td><td>'scale' (auto)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="code-block">
+            <span class="kw">from</span> sklearn.svm <span class="kw">import</span> <span class="fn">SVC</span><br>
+            <span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="fn">StandardScaler</span><br><br>
+            <span class="kw">def</span> <span class="fn">train_svm</span>(X_train, y_train, save_path):<br>
+            &nbsp;&nbsp;scaler = <span class="fn">StandardScaler</span>()<br>
+            &nbsp;&nbsp;X_scaled = scaler.<span class="fn">fit_transform</span>(X_train)<br><br>
+            &nbsp;&nbsp;model = <span class="fn">SVC</span>(kernel=<span class="str">'rbf'</span>, C=<span class="num">1.0</span>,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gamma=<span class="str">'scale'</span>, probability=<span class="kw">True</span>)<br>
+            &nbsp;&nbsp;model.<span class="fn">fit</span>(X_scaled, y_train)<br><br>
+            &nbsp;&nbsp;joblib.<span class="fn">dump</span>((model, scaler), save_path)<br>
+            &nbsp;&nbsp;<span class="kw">return</span> model, scaler
+          </div>
+          <p class="text-xs text-tertiary mt-8">Wrapper: <code>models/svm.py</code></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 4. Results ═══ -->
+<section class="section" id="results">
+  <div class="section-inner">
+    <div class="section-tag reveal">📊 4. Results &amp; Evaluation</div>
+    <h2 class="section-title reveal reveal-delay-1">Experimental Results</h2>
+    <p class="section-desc reveal reveal-delay-2">Four dimensions of evaluation: accuracy, training speed, overfitting analysis, and noise robustness.</p>
+
+    <!-- Full accuracy table -->
+    <div class="reveal reveal-delay-3">
+      <h3 class="mb-16" style="font-size:1.1rem;">Accuracy, Speed &amp; Overfitting Comparison</h3>
+      <div class="table-wrap mb-40">
+        <table>
+          <thead>
+            <tr><th>Algorithm</th><th>Type</th><th>Val Acc</th><th>Test Acc</th><th>Train Time</th><th>Val–Test Gap</th><th>Overfitting</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>KNN (k=7)</strong></td>
+              <td><span class="tag tag-accent" style="font-size:0.65rem;">Custom</span></td>
+              <td>91.83%</td>
+              <td>92.14%</td>
+              <td>0.000s</td>
+              <td>0.31%</td>
+              <td><span class="tag tag-cyan">None</span></td>
+            </tr>
+            <tr>
+              <td><strong>Logistic Regression</strong></td>
+              <td><span class="tag tag-accent" style="font-size:0.65rem;">Custom</span></td>
+              <td>92.20%</td>
+              <td>91.67%</td>
+              <td>0.667s</td>
+              <td>0.53%</td>
+              <td><span class="tag tag-cyan">None</span></td>
+            </tr>
+            <tr>
+              <td><strong>Decision Tree</strong></td>
+              <td><span class="tag tag-accent" style="font-size:0.65rem;">Custom</span></td>
+              <td>90.72%</td>
+              <td>90.24%</td>
+              <td>1.129s</td>
+              <td>0.48%</td>
+              <td><span class="tag tag-cyan">None</span></td>
+            </tr>
+            <tr class="best-row">
+              <td><strong>SVM (RBF Kernel)</strong></td>
+              <td><span class="tag tag-cyan" style="font-size:0.65rem;">sklearn</span></td>
+              <td><strong class="best">92.95%</strong></td>
+              <td><strong class="best">92.88%</strong></td>
+              <td><strong class="best">0.209s</strong></td>
+              <td><strong class="best">0.07%</strong></td>
+              <td><span class="tag tag-cyan">Best</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Summary highlights -->
+    <div class="grid-4 reveal mb-40" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+      <div class="card" style="text-align:center;padding:20px;">
+        <div style="font-size:1.8rem;font-weight:800;color:var(--cyan);">92.88%</div>
+        <div class="text-xs text-tertiary mt-4">SVM Top Test Accuracy</div>
+      </div>
+      <div class="card" style="text-align:center;padding:20px;">
+        <div style="font-size:1.8rem;font-weight:800;color:var(--accent);">0.000s</div>
+        <div class="text-xs text-tertiary mt-4">KNN Training (Lazy)</div>
+      </div>
+      <div class="card" style="text-align:center;padding:20px;">
+        <div style="font-size:1.8rem;font-weight:800;color:var(--gold);">0.07%</div>
+        <div class="text-xs text-tertiary mt-4">SVM Val–Test Gap</div>
+      </div>
+      <div class="card" style="text-align:center;padding:20px;">
+        <div style="font-size:1.8rem;font-weight:800;color:var(--pink);">89–92%</div>
+        <div class="text-xs text-tertiary mt-4">All Custom Algorithms</div>
+      </div>
+    </div>
+
+    <!-- Robustness -->
+    <div class="reveal reveal-delay-4">
+      <h3 class="mb-8" style="font-size:1.1rem;">Robustness — Noise Injection Test</h3>
+      <p class="text-secondary text-sm mb-16">
+        Gaussian noise (mean=0, std=σ×noise_level) was added to a random subset of features in the test set to evaluate model resilience.
+      </p>
+      <div class="table-wrap mb-40">
+        <table>
+          <thead>
+            <tr><th style="min-width:130px;">Noise Level</th><th>KNN</th><th>Logistic Reg.</th><th>Decision Tree</th><th class="best">SVM</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Clean (no noise)</td><td>92.14%</td><td>91.67%</td><td>90.24%</td><td class="best">92.88%</td></tr>
+            <tr><td>5% features × 0.05σ</td><td>92.14%</td><td>91.67%</td><td>90.24%</td><td class="best">92.88%</td></tr>
+            <tr><td>10% features × 0.10σ</td><td>92.00%</td><td>91.78%</td><td>89.48%</td><td class="best">92.80%</td></tr>
+            <tr><td>20% features × 0.20σ</td><td>92.14%</td><td>91.49%</td><td>89.88%</td><td class="best">92.58%</td></tr>
+            <tr style="border-top:2px solid var(--border);font-weight:600;">
+              <td>Max Drop</td><td class="best">−0.14%</td><td>−0.18%</td><td>−0.76%</td><td class="best">−0.30%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid-3" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+        <div class="card-sm" style="background:var(--bg-elevated);border-radius:var(--radius-sm);text-align:center;">
+          <div style="color:var(--cyan);font-weight:700;">SVM</div>
+          <div class="text-xs text-tertiary">Most robust overall</div>
+        </div>
+        <div class="card-sm" style="background:var(--bg-elevated);border-radius:var(--radius-sm);text-align:center;">
+          <div style="color:var(--accent);font-weight:700;">KNN</div>
+          <div class="text-xs text-tertiary">Insensitive to local noise</div>
+        </div>
+        <div class="card-sm" style="background:var(--bg-elevated);border-radius:var(--radius-sm);text-align:center;">
+          <div style="color:var(--pink);font-weight:700;">Decision Tree</div>
+          <div class="text-xs text-tertiary">Most sensitive to noise</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gallery -->
+    <div class="reveal mt-40">
+      <h3 class="mb-20" style="font-size:1.1rem;">Result Visualizations</h3>
+      <div class="gallery">
+        <div class="gallery-item" onclick="openLightbox('figures/comparison.png')">
+          <img src="figures/comparison.png" alt="Algorithm Comparison" loading="lazy">
+          <div class="gallery-caption">Algorithm Comparison <small>— Accuracy &amp; time bars, summary table</small></div>
+        </div>
+        <div class="gallery-item" onclick="openLightbox('figures/confusion_matrices.png')">
+          <img src="figures/confusion_matrices.png" alt="Confusion Matrices" loading="lazy">
+          <div class="gallery-caption">Confusion Matrices <small>— Per-class prediction detail</small></div>
+        </div>
+        <div class="gallery-item" onclick="openLightbox('figures/loss_curve.png')">
+          <img src="figures/loss_curve.png" alt="Loss Curve" loading="lazy">
+          <div class="gallery-caption">Logistic Regression Loss <small>— Convergence at ~50 epochs</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 5. Architecture ═══ -->
+<section class="section" id="architecture">
+  <div class="section-inner">
+    <div class="section-tag reveal">🏗️ 5. Project Architecture</div>
+    <h2 class="section-title reveal reveal-delay-1">Modular Code Structure</h2>
+    <p class="section-desc reveal reveal-delay-2">Clean separation of data, algorithm, and evaluation layers — each module is independently testable and reusable.</p>
+
+    <div class="grid-4 mb-40 reveal reveal-delay-3" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+      <div class="algo-card" style="text-align:center;">
+        <span style="font-size:2rem;display:block;margin-bottom:10px;">📦</span>
+        <h3 style="font-size:0.95rem;">Data Layer</h3>
+        <p style="font-size:0.8rem;color:var(--text-secondary);"><code>data_loader.py</code><br><code>data_cleaner.py</code><br><code>eda.py</code></p>
+      </div>
+      <div class="algo-card" style="text-align:center;">
+        <span style="font-size:2rem;display:block;margin-bottom:10px;">🧠</span>
+        <h3 style="font-size:0.95rem;">Algorithm Layer</h3>
+        <p style="font-size:0.8rem;color:var(--text-secondary);"><code>algorithms/knn.py</code><br><code>algorithms/logistic_regression.py</code><br><code>algorithms/decision_tree.py</code></p>
+      </div>
+      <div class="algo-card" style="text-align:center;">
+        <span style="font-size:2rem;display:block;margin-bottom:10px;">📊</span>
+        <h3 style="font-size:0.95rem;">Evaluation Layer</h3>
+        <p style="font-size:0.8rem;color:var(--text-secondary);"><code>evaluator.py</code><br><code>utils.py</code></p>
+      </div>
+      <div class="algo-card" style="text-align:center;">
+        <span style="font-size:2rem;display:block;margin-bottom:10px;">🚀</span>
+        <h3 style="font-size:0.95rem;">Entry Point</h3>
+        <p style="font-size:0.8rem;color:var(--text-secondary);"><code>main.py</code><br><code>train.py</code><br><code>test.py</code></p>
+      </div>
+    </div>
+
+    <div class="card reveal reveal-delay-4" style="padding:0;">
+      <div style="padding:24px 28px 0;">
+        <h3 style="font-size:1rem;margin-bottom:4px;">Full Directory Tree</h3>
+        <p class="text-secondary text-xs mb-16">All source files in the repository.</p>
+      </div>
+      <div class="arch-tree" style="border-radius:0;border-left:none;border-right:none;border-bottom:none;">
+        <span class="d">📁 BeanClassifier/</span><br>
+        <span class="hl"> ┣ 📄 main.py</span><span class="cm">  &nbsp;← Unified entry point (orchestrates all tasks)</span><br>
+        <span class="f"> ┣ 📄 data_loader.py</span><span class="cm">  &nbsp;← Load bean CSV datasets</span><br>
+        <span class="f"> ┣ 📄 data_cleaner.py</span><span class="cm">  &nbsp;← Missing values &amp; label cleaning</span><br>
+        <span class="f"> ┣ 📄 eda.py</span><span class="cm">  &nbsp;← Exploratory data analysis &amp; visualization</span><br>
+        <span class="f"> ┣ 📄 evaluator.py</span><span class="cm">  &nbsp;← Accuracy, robustness, overfitting tests</span><br>
+        <span class="f"> ┣ 📄 utils.py</span><span class="cm">  &nbsp;← Shared utilities (standardize, metrics)</span><br>
+        <span class="f"> ┣ 📄 requirements.txt</span><span class="cm">  &nbsp;← Dependencies</span><br>
+        <span class="f"> ┣ 📄 README.md</span><br>
+        <span class="d"> ┣ 📁 algorithms/</span><span class="cm">  &nbsp;← From-scratch implementations</span><br>
+        <span class="f"> ┃ ┣ 📄 knn.py</span><br>
+        <span class="f"> ┃ ┣ 📄 logistic_regression.py</span><br>
+        <span class="f"> ┃ ┗ 📄 decision_tree.py</span><br>
+        <span class="d"> ┣ 📁 models/</span><span class="cm">  &nbsp;← sklearn wrappers &amp; saved models</span><br>
+        <span class="f"> ┃ ┣ 📄 knn.py</span><br>
+        <span class="f"> ┃ ┣ 📄 logistic_regression.py</span><br>
+        <span class="f"> ┃ ┣ 📄 linear_regression.py</span><br>
+        <span class="f"> ┃ ┣ 📄 svm.py</span><br>
+        <span class="f"> ┃ ┣ 📄 ann.py</span><br>
+        <span class="f"> ┃ ┗ 📄 ann_house.pth</span><br>
+        <span class="d"> ┣ 📁 preprocess/</span><span class="cm">  &nbsp;← Data preprocessing utilities</span><br>
+        <span class="f"> ┃ ┣ 📄 titanic_preprocess.py</span><br>
+        <span class="f"> ┃ ┣ 📄 housing_preprocess.py</span><br>
+        <span class="f"> ┃ ┗ 📄 hog_feature.py</span><br>
+        <span class="d"> ┣ 📁 output/</span><span class="cm">  &nbsp;← Reports &amp; figures</span><br>
+        <span class="f"> ┃ ┣ 📄 report.txt</span><br>
+        <span class="f"> ┃ ┣ 📄 paper.md</span><br>
+        <span class="f"> ┃ ┗ 📁 figures/</span><span class="cm">  &nbsp;← 7 visualization PNGs</span><br>
+        <span class="d"> ┗ 📁 docs/</span><span class="cm">  &nbsp;← GitHub Pages site</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Conclusion ═══ -->
+<section class="section" id="conclusion">
+  <div class="section-inner">
+    <div class="section-tag reveal">🎯 Conclusion</div>
+    <h2 class="section-title reveal reveal-delay-1">Key Takeaways</h2>
+    <p class="section-desc reveal reveal-delay-2">What this project demonstrated about machine learning principles and practice.</p>
+
+    <div class="conclusion-grid reveal reveal-delay-3">
+      <div class="conclusion-item">
+        <div class="num">1</div>
+        <h4>SVM is the Best Performer</h4>
+        <p>92.88% test accuracy, 0.209s training time, strongest noise robustness. The RBF kernel effectively captures non-linear class boundaries.</p>
+      </div>
+      <div class="conclusion-item">
+        <div class="num">2</div>
+        <h4>Custom Algorithms Are Viable</h4>
+        <p>All three from-scratch implementations scored &gt;90%, proving both the correctness of the implementations and the separability of the data.</p>
+      </div>
+      <div class="conclusion-item">
+        <div class="num">3</div>
+        <h4>Data Cleaning is Non-Negotiable</h4>
+        <p>25→7 label normalization and median imputation were essential preprocessing steps — without them, no model would train correctly.</p>
+      </div>
+      <div class="conclusion-item">
+        <div class="num">4</div>
+        <h4>No Overfitting Observed</h4>
+        <p>All algorithms show &lt;1% gap between validation and test accuracy, demonstrating strong generalization across all models.</p>
+      </div>
+    </div>
+
+    <div class="card mt-40 reveal reveal-delay-4">
+      <h3 class="mb-16" style="font-size:1.05rem;">Future Improvements</h3>
+      <div class="grid-4" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+        <div class="card-sm" style="background:var(--bg-elevated);border-radius:var(--radius-sm);padding:16px;">
+          <span style="font-size:1.2rem;">🌲</span>
+          <div style="font-weight:600;margin-top:4px;">Ensemble Methods</div>
+          <div class="text-xs text-tertiary">Random Forest, XGBoost</div>
+        </div>
+        <div class="card-sm" style="background:var(--bg-elevated);border-radius:var(--radius-sm);padding:16px;">
+          <span style="font-size:1.2rem;">🔧</span>
+          <div style="font-weight:600;margin-top:4px;">Hyperparameter Optimization</div>
+          <div class="text-xs text-tertiary">Bayesian search, grid search</div>
+        </div>
+        <div class="card-sm" style="background:var(--bg-elevated);border-radius:var(--radius-sm);padding:16px;">
+          <span style="font-size:1.2rem;">📉</span>
+          <div style="font-weight:600;margin-top:4px;">Dimensionality Reduction</div>
+          <div class="text-xs text-tertiary">PCA, feature selection</div>
+        </div>
+        <div class="card-sm" style="background:var(--bg-elevated);border-radius:var(--radius-sm);padding:16px;">
+          <span style="font-size:1.2rem;">⚖️</span>
+          <div style="font-weight:600;margin-top:4px;">Class Imbalance</div>
+          <div class="text-xs text-tertiary">SMOTE, weighted loss</div>
+        </div>
+        <div class="card-sm" style="background:var(--bg-elevated);border-radius:var(--radius-sm);padding:16px;">
+          <span style="font-size:1.2rem;">🧠</span>
+          <div style="font-weight:600;margin-top:4px;">Deep Learning</div>
+          <div class="text-xs text-tertiary">CNN on raw bean images</div>
+        </div>
+        <div class="card-sm" style="background:var(--bg-elevated);border-radius:var(--radius-sm);padding:16px;">
+          <span style="font-size:1.2rem;">📦</span>
+          <div style="font-weight:600;margin-top:4px;">Deployment</div>
+          <div class="text-xs text-tertiary">MLOps, model serving</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Footer ═══ -->
+<footer>
+  <p>Built with ❤️ for <strong>机器学习与项目实践 2026</strong></p>
+  <div class="footer-links">
+    <a href="https://github.com/zhangdsg/machine" target="_blank">GitHub</a>
+    <a href="https://archive.ics.uci.edu/dataset/602/dry+bean+dataset" target="_blank">UCI Dataset</a>
+    <a href="paper.md" target="_blank">Paper</a>
+    <a href="report.txt" target="_blank">Report</a>
+  </div>
+</footer>
+
+<!-- ═══ Lightbox ═══ -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="Enlarged view">
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
